@@ -94,15 +94,19 @@ def retrieve_this_location(api_key, location, start_date, end_date, frequency, r
                 frequency)
             json_page = urllib.request.urlopen(url_page, timeout=10)
             json_data = json.loads(json_page.read().decode())
-
-        if response_cache_path:
-            with open(f'{response_cache_path}/{location}_{start_d}_{end_d}', 'w') as f:
-                json.dump(json_data, f)
-        data = json_data['data']['weather']
-        # call function to extract json object
-        df_this_month = extract_monthly_data(data)
-        df_this_month['location'] = location
-        df_hist = pd.concat([df_hist, df_this_month])
+        try:
+            if response_cache_path:
+                with open(f'{response_cache_path}/{location}_{start_d}_{end_d}', 'w') as f:
+                    json.dump(json_data, f)
+        
+            data = json_data['data']['weather']
+            # call function to extract json object
+            df_this_month = extract_monthly_data(data)
+            df_this_month['location'] = location
+            df_hist = pd.concat([df_hist, df_this_month])
+        except:
+            print(json_data['data'])
+            print("This location not found in the API data")
 
         time_elapsed = datetime.now() - start_time
         print('Time elapsed (hh:mm:ss.ms) {}'.format(time_elapsed))
